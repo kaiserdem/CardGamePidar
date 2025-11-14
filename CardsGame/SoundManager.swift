@@ -8,6 +8,7 @@ class SoundManager {
     private var audioPlayer: AVAudioPlayer?
     private var cardPlaceTimer: Timer?
     private var isSoundEnabled: Bool = true
+    private var volume: Float = 0.7
     
     private init() {
         // Налаштування сесії аудіо
@@ -16,6 +17,15 @@ class SoundManager {
             try AVAudioSession.sharedInstance().setActive(true)
         } catch {
             print("Помилка налаштування аудіо сесії: \(error)")
+        }
+        
+        // Завантажуємо збережені налаштування
+        if UserDefaults.standard.object(forKey: "soundEnabled") != nil {
+            isSoundEnabled = UserDefaults.standard.bool(forKey: "soundEnabled")
+        }
+        
+        if UserDefaults.standard.object(forKey: "soundVolume") != nil {
+            volume = Float(UserDefaults.standard.double(forKey: "soundVolume"))
         }
     }
     
@@ -73,6 +83,22 @@ class SoundManager {
         isSoundEnabled = enabled
     }
     
+    /// Встановити гучність (0.0 - 1.0)
+    func setVolume(_ volume: Double) {
+        self.volume = Float(volume)
+        audioPlayer?.volume = self.volume
+    }
+    
+    /// Отримати поточну гучність
+    func getVolume() -> Double {
+        return Double(volume)
+    }
+    
+    /// Отримати стан звуку
+    func getSoundEnabled() -> Bool {
+        return isSoundEnabled
+    }
+    
     /// Відтворити звук
     func playSound(_ soundType: SoundType) {
         guard isSoundEnabled else { return }
@@ -108,7 +134,7 @@ class SoundManager {
             cardPlaceTimer?.invalidate()
             
             audioPlayer = try AVAudioPlayer(contentsOf: url)
-            audioPlayer?.volume = 0.7
+            audioPlayer?.volume = volume
             audioPlayer?.play()
             
             // Якщо вказано час зупинки, встановлюємо таймер

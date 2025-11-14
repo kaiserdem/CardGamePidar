@@ -5,6 +5,7 @@ struct MainMenuView: View {
     @State private var showGameView = false
     @State private var showTutorialView = false
     @State private var showShopView = false
+    @State private var showSettingsView = false
     @State private var numberOfPlayers = 2
     
     var body: some View {
@@ -24,12 +25,6 @@ struct MainMenuView: View {
                 }
                 .padding(.bottom, 20)
                 
-                MenuButton(title: "Play with 4 Players") {
-                    numberOfPlayers = 4
-                    showGameView = true
-                }
-                .padding(.bottom, 20)
-                
                 MenuButton(title: "Tutorial") {
                     showTutorialView = true
                 }
@@ -37,6 +32,11 @@ struct MainMenuView: View {
                 
                 MenuButton(title: "Shop") {
                     showShopView = true
+                }
+                .padding(.bottom, 20)
+                
+                MenuButton(title: "Settings") {
+                    showSettingsView = true
                 }
                 .padding(.bottom, 50)
                 
@@ -52,6 +52,9 @@ struct MainMenuView: View {
         }
         .fullScreenCover(isPresented: $showShopView) {
             ShopView()
+        }
+        .fullScreenCover(isPresented: $showSettingsView) {
+            SettingsView()
         }
     }
 }

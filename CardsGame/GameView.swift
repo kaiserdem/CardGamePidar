@@ -8,6 +8,7 @@ struct GameView: View {
     @State private var removingPairsDelay: Double = 0
     @State private var cardOnTable: PlayingCard? // Карта на столі
     @State private var cardOnTableOwner: Int? // Чия карта (0 - гравець, 1 - бот)
+    @State private var isButtonEnabled: Bool = true // Чи можна натискати кнопку "Take Card"
     
     let numberOfPlayers: Int
     
@@ -161,7 +162,7 @@ struct GameView: View {
                             cardBack: .default
                         )
                     }
-                    .padding(.bottom, 120)
+                    .padding(.bottom, 130)
                 }
             }
             
@@ -241,20 +242,24 @@ struct GameView: View {
                 .foregroundColor(.white)
             
             // Кнопка взяття карти (тільки для гравця) або невидимий placeholder
-            if gameManager.currentPlayer?.isHuman == true {
+            if gameManager.currentPlayer?.isHuman == true, gameManager.gameState == .inProgress {
                 Button(action: {
                     takeCardFromRandomOpponent()
                 }) {
                     Text("Take Card")
                         .font(.customHeadline)
-                        .foregroundColor(.white)
+                        .foregroundColor(isButtonEnabled ? .white : .gray)
                         .frame(width: UIScreen.main.bounds.width / 2.7, height: 50)
                         .background(
                             LinearGradient(
-                                gradient: Gradient(colors: [
+                                gradient: Gradient(colors: isButtonEnabled ? [
                                     Color(hex: "1C1C2C"),
                                     Color(hex: "212135"),
                                     Color(hex: "171726")
+                                ] : [
+                                    Color(hex: "0F0F1A"),
+                                    Color(hex: "151520"),
+                                    Color(hex: "0D0D15")
                                 ]),
                                 startPoint: .top,
                                 endPoint: .bottom
@@ -263,9 +268,10 @@ struct GameView: View {
                         .cornerRadius(30)
                         .overlay(
                             RoundedRectangle(cornerRadius: 30)
-                                .stroke(Color(hex: "A3702C"), lineWidth: 2)
+                                .stroke(isButtonEnabled ? Color(hex: "A3702C") : Color.gray.opacity(0.5), lineWidth: 2)
                         )
                 }
+                .disabled(!isButtonEnabled)
             } else {
                 // Невидимий placeholder для фіксації висоти
                 Color.clear
@@ -381,6 +387,10 @@ struct GameView: View {
             if gameManager.gameState != .finished {
                 gameManager.gameState = .inProgress
                 gameManager.currentPlayerIndex = 0
+                // Розблоковуємо кнопку, якщо починається хід гравця
+                if gameManager.currentPlayer?.isHuman == true {
+                    isButtonEnabled = true
+                }
             }
         }
     }
@@ -406,12 +416,19 @@ struct GameView: View {
     }
     
     private func takeCardFromRandomOpponent() {
+        // Блокуємо кнопку, щоб уникнути багаторазового натискання
+        guard isButtonEnabled else { return }
+        isButtonEnabled = false
+        
         // Знаходимо суперників
         let opponents = gameManager.players.enumerated()
             .filter { $0.offset != gameManager.currentPlayerIndex && $0.element.hasCards }
             .map { $0.offset }
         
-        guard let randomOpponent = opponents.randomElement() else { return }
+        guard let randomOpponent = opponents.randomElement() else {
+            isButtonEnabled = true // Розблоковуємо, якщо немає суперників
+            return
+        }
         
         // Зберігаємо кількість карт суперника до видалення
         let opponentCardsCountBefore = gameManager.players[randomOpponent].hand.count
@@ -419,7 +436,10 @@ struct GameView: View {
         // Беремо карту (але не додаємо до руки одразу)
         let takenCard = gameManager.takeCardFromOpponentWithoutAdding(opponentIndex: randomOpponent)
         
-        guard let card = takenCard else { return }
+        guard let card = takenCard else {
+            isButtonEnabled = true // Розблоковуємо, якщо не вдалося взяти карту
+            return
+        }
         
         // Показуємо карту на столі над картами гравця
         withAnimation(.easeInOut(duration: 0.3)) {
@@ -457,6 +477,9 @@ struct GameView: View {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
                     botTakeCardFromPlayer()
                 }
+            } else {
+                // Якщо наступний гравець - людина, розблоковуємо кнопку
+                isButtonEnabled = true
             }
         }
     }
@@ -529,6 +552,9 @@ struct GameView: View {
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
                     self.botTakeCardFromPlayer()
                 }
+            } else {
+                // Якщо наступний гравець - людина, розблоковуємо кнопку
+                self.isButtonEnabled = true
             }
         }
     }
