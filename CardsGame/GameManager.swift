@@ -49,7 +49,7 @@ class GameManager: ObservableObject {
         lastMoves = [:]
         
         var deck = Deck()
-        // shuffle() викликається всередині dealCards()
+        // shuffle() викликається всередині dealCards() і відтворює звук тасування
         let hands = deck.dealCards(numberOfPlayers: numberOfPlayers)
         
         // Створюємо гравців
@@ -174,6 +174,9 @@ class GameManager: ObservableObject {
         }
         
         removePairsFromAllPlayers()
+        
+        // Звук видалення пари
+        SoundManager.shared.playPairRemovedSound()
         
         print("=== ПІСЛЯ ВИДАЛЕННЯ ПАР ===")
         var cardsAfterRemoval: [Int] = []
@@ -334,6 +337,9 @@ class GameManager: ObservableObject {
         players[currentPlayerIndex].coins += coinsEarned
         print("🎉 Гравець \(currentPlayer.playerNumber) отримав \(coinsEarned) монет, всього: \(players[currentPlayerIndex].coins)")
         
+        // Звук додавання монет
+        SoundManager.shared.playCoinSound()
+        
         // Оновлюємо історію ходів для серій
         lastMoves[currentPlayerIndex] = formsPair(card: takenCard, playerIndex: currentPlayerIndex) ? (lastMoves[currentPlayerIndex] ?? 0) + 1 : 0
     }
@@ -384,7 +390,12 @@ class GameManager: ObservableObject {
                     let winBonus = 50
                     players[winnerIndex].coins += winBonus
                     print("🏆 Гравець виграв! Бонус: \(winBonus) монет, всього: \(players[winnerIndex].coins)")
+                    // Звук виграшу
+                    SoundManager.shared.playWinSound()
                 }
+            } else {
+                // Звук програшу
+                SoundManager.shared.playLoseSound()
             }
             
             gameState = .finished

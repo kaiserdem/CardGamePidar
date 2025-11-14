@@ -11,6 +11,8 @@ struct Deck {
     // Перемішування колоди
     mutating func shuffle() {
         cards.shuffle()
+        // Звук тасування
+        SoundManager.shared.playShuffleSound()
     }
     
     // Роздача карт гравцям (збалансована роздача по черзі)
@@ -18,7 +20,8 @@ struct Deck {
         var hands = Array(repeating: [PlayingCard](), count: numberOfPlayers)
         
         // Перемішуємо всю колоду (випадковий порядок карт)
-        cards.shuffle()
+        // Використовуємо метод shuffle() щоб відтворити звук
+        self.shuffle()
         
         // Роздаємо по черзі кожну карту
         var currentPlayer = 0

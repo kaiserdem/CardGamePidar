@@ -212,8 +212,8 @@ struct GameView: View {
                 .foregroundColor(.white)
         }
         .onAppear {
-            // Автоматично переходимо до скидання через 2 секунди
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+            // Автоматично переходимо до скидання через 4 секунди
+            DispatchQueue.main.asyncAfter(deadline: .now() + 4.0) {
                 gameManager.startRemovingPairs()
             }
         }
@@ -374,7 +374,7 @@ struct GameView: View {
     
     private func animateDealing() {
         // Проста затримка перед початком гри (пари вже видалені)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
             // Перевіряємо чи хтось не виграв одразу
             gameManager.checkForWinner()
             
@@ -387,7 +387,7 @@ struct GameView: View {
     
     private func animateRemovingPairs() {
         // Затримка перед видаленням пар (для анімації)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
             gameManager.removePairsAfterAnimation()
         }
     }
@@ -426,9 +426,11 @@ struct GameView: View {
             cardOnTable = card
             cardOnTableOwner = 0 // Карта гравця
         }
+        // Звук кладення карти на стіл
+        SoundManager.shared.playCardPlaceSound()
         
         // Після затримки додаємо карту до руки та перевіряємо пари
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
             // Додаємо карту до руки
             gameManager.addCardToCurrentPlayer(card: card)
             
@@ -452,7 +454,7 @@ struct GameView: View {
             
             // Якщо наступний гравець - бот, він робить хід
             if gameManager.currentPlayer?.isHuman == false {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
                     botTakeCardFromPlayer()
                 }
             }
@@ -486,9 +488,11 @@ struct GameView: View {
             cardOnTable = card
             cardOnTableOwner = 1 // Карта бота
         }
+        // Звук кладення карти на стіл
+        SoundManager.shared.playCardPlaceSound()
         
         // Після затримки додаємо карту до руки та перевіряємо пари
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.5) {
             // Перевіряємо чи гра не закінчилась
             guard self.gameManager.gameState != .finished else { return }
             
@@ -522,7 +526,7 @@ struct GameView: View {
             
             // Якщо наступний гравець знову бот, він робить хід
             if self.gameManager.currentPlayer?.isHuman == false {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
                     self.botTakeCardFromPlayer()
                 }
             }
