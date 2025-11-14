@@ -17,6 +17,10 @@ class GameManager: ObservableObject {
     private var previousCardCounts: [Int] = []
     private var noChangeTurns: Int = 0
     
+    // Спеціальна перевірка для випадку з 3 картами
+    private var threeCardsExchangeCount: Int = 0
+    private var lastThreeCardsState: [Int] = []
+    
     // Відстеження серій успішних ходів для нарахування монет
     private var lastMoves: [Int: Int] = [:] // playerIndex: кількість успішних ходів підряд
     
@@ -44,6 +48,8 @@ class GameManager: ObservableObject {
         // Скидаємо відстеження deadlock
         previousCardCounts = []
         noChangeTurns = 0
+        threeCardsExchangeCount = 0
+        lastThreeCardsState = []
         
         // Скидаємо відстеження серій ходів
         lastMoves = [:]
@@ -347,7 +353,58 @@ class GameManager: ObservableObject {
     // Перевірка на deadlock (зациклення)
     private func checkForDeadlock() {
         let currentCardCounts = players.map { $0.hand.count }
+        let totalCards = currentCardCounts.reduce(0, +)
         
+        // Спеціальна перевірка для випадку з 3 картами
+        if totalCards == 3 {
+            // Якщо це перший раз коли залишилось 3 карти - ініціалізуємо стан
+            if lastThreeCardsState.isEmpty {
+                lastThreeCardsState = currentCardCounts
+                threeCardsExchangeCount = 0
+            } else {
+                // Перевіряємо чи стан змінився (карти передаються між гравцями)
+                // Якщо стан змінився - це означає що карта була передана
+                if currentCardCounts != lastThreeCardsState {
+                    // Стан змінився - карта передана, збільшуємо лічильник
+                    threeCardsExchangeCount += 1
+                    lastThreeCardsState = currentCardCounts
+                    
+                    print("🔄 Передача карти при 3 картах. Лічильник: \(threeCardsExchangeCount)")
+                }
+            }
+            
+            // Якщо карти передаються більше 3 разів - нічия
+            if threeCardsExchangeCount > 3 {
+                print("⚠️ НІЧИЯ! Залишилось 3 карти і вони передаються більше 3 разів")
+                print("  Поточний стан: \(currentCardCounts)")
+                
+                // Нічия - виграш ділиться пополам
+                self.winner = nil
+                
+                // Ділимо монети пополам між гравцями
+                if players.count >= 2 {
+                    let totalCoins = players.reduce(0) { $0 + $1.coins }
+                    let coinsPerPlayer = totalCoins / players.count
+                    
+                    for i in 0..<players.count {
+                        players[i].coins = coinsPerPlayer
+                    }
+                    
+                    print("💰 Монети розподілено порівну: \(coinsPerPlayer) монет кожному гравцю")
+                }
+                
+                gameState = .finished
+                return
+            }
+        } else {
+            // Якщо не 3 карти - скидаємо лічильник
+            if totalCards != 3 {
+                threeCardsExchangeCount = 0
+                lastThreeCardsState = []
+            }
+        }
+        
+        // Звичайна перевірка deadlock
         // Якщо кількість карт не змінилась
         if currentCardCounts == previousCardCounts {
             noChangeTurns += 1

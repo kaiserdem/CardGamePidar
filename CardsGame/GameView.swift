@@ -282,6 +282,20 @@ struct GameView: View {
     }
     
     // MARK: - Finished View
+    private var resultText: String {
+        if gameManager.winner != nil {
+            return "You won!"
+        } else {
+            // Перевіряємо чи це нічия (залишилось 3 карти і вони передавались)
+            let totalCards = gameManager.players.reduce(0) { $0 + $1.hand.count }
+            if totalCards == 3 {
+                return "Draw!"
+            } else {
+                return "You lost!"
+            }
+        }
+    }
+    
     private var finishedView: some View {
         ZStack {
             // Напівпрозорий фон на весь екран
@@ -293,7 +307,7 @@ struct GameView: View {
             // Попап
             VStack(spacing: 30) {
                 // Текст результату
-                Text(gameManager.winner != nil ? "You won!" : "You lost!")
+                Text(resultText)
                     .font(.customLargeTitle)
                     .foregroundColor(.white)
                 
