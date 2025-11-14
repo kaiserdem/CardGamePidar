@@ -89,6 +89,25 @@ enum PlayingCard: String, CaseIterable {
         return self.rawValue
     }
     
+    // Отримати ранг карти (для порівняння пар)
+    var rank: String {
+        let raw = self.rawValue
+        if raw.hasPrefix("2") { return "2" }
+        if raw.hasPrefix("3") { return "3" }
+        if raw.hasPrefix("4") { return "4" }
+        if raw.hasPrefix("5") { return "5" }
+        if raw.hasPrefix("6") { return "6" }
+        if raw.hasPrefix("7") { return "7" }
+        if raw.hasPrefix("8") { return "8" }
+        if raw.hasPrefix("9") { return "9" }
+        if raw.hasPrefix("10") { return "10" }
+        if raw.hasPrefix("Jack") { return "Jack" }
+        if raw.hasPrefix("Queen") { return "Queen" }
+        if raw.hasPrefix("King") { return "King" }
+        if raw.hasPrefix("Ace") { return "Ace" }
+        return ""
+    }
+    
     var fullName: String {
         let rankName: String
         switch self.rawValue.prefix { $0.isLetter == false } {

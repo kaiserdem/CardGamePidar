@@ -10,9 +10,22 @@
 		057ED6352EC63F24009A8C76 /* CardsGame.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = CardsGame.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		057ED7422EC747DD009A8C76 /* Exceptions for "CardsGame" folder in "CardsGame" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 057ED6342EC63F24009A8C76 /* CardsGame */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		057ED6372EC63F24009A8C76 /* CardsGame */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				057ED7422EC747DD009A8C76 /* Exceptions for "CardsGame" folder in "CardsGame" target */,
+			);
 			path = CardsGame;
 			sourceTree = "<group>";
 		};
@@ -256,6 +269,8 @@
 				DEVELOPMENT_TEAM = Q2TWT4N9WP;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = CardsGame/Info.plist;
+				INFOPLIST_KEY_NSUserTrackingUsageDescription = "This app requests permission to track your usage to enhance our services, improve your experience, and analyze performance.\n";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -293,6 +308,8 @@
 				DEVELOPMENT_TEAM = Q2TWT4N9WP;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = CardsGame/Info.plist;
+				INFOPLIST_KEY_NSUserTrackingUsageDescription = "This app requests permission to track your usage to enhance our services, improve your experience, and analyze performance.\n";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;

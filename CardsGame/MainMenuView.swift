@@ -3,6 +3,7 @@ import SwiftUI
 
 struct MainMenuView: View {
     @State private var showGameView = false
+    @State private var numberOfPlayers = 2
     
     var body: some View {
         ZStack {
@@ -16,13 +17,14 @@ struct MainMenuView: View {
                 Spacer()
                 
                 MenuButton(title: "Play with 2 Players") {
+                    numberOfPlayers = 2
                     showGameView = true
                 }
                 .padding(.bottom, 20)
                 
                 MenuButton(title: "Play with 4 Players") {
-                    // TODO: Перехід до гри на 4 гравці
-                    print("Play with 4 Players")
+                    numberOfPlayers = 4
+                    showGameView = true
                 }
                 .padding(.bottom, 20)
                 
@@ -42,7 +44,7 @@ struct MainMenuView: View {
             .padding(.vertical, 60)
         }
         .fullScreenCover(isPresented: $showGameView) {
-            GameView()
+            GameView(numberOfPlayers: numberOfPlayers)
         }
     }
 }
@@ -64,7 +66,7 @@ struct MenuButton: View {
                 
                 // Текст на кнопці
                 Text(title)
-                    .font(.system(size: 24, weight: .bold))
+                    .font(.customBold(size: 24))
                     .foregroundColor(.white)
                     .multilineTextAlignment(.center)
             }
