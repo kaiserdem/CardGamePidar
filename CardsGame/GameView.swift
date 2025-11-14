@@ -164,6 +164,11 @@ struct GameView: View {
                     .padding(.bottom, 120)
                 }
             }
+            
+            // Попап виграшу/програшу (поверх всього екрану)
+            if gameManager.gameState == .finished {
+                finishedView
+            }
         }
         .onAppear {
             startGameSequence()
@@ -185,7 +190,8 @@ struct GameView: View {
         case .inProgress:
             inProgressView
         case .finished:
-            finishedView
+            // finishedView тепер показується на рівні основного ZStack
+            EmptyView()
         }
     }
     
@@ -262,7 +268,8 @@ struct GameView: View {
             // Напівпрозорий фон на весь екран
             Color.black.opacity(0.5)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
-                .edgesIgnoringSafeArea(.all)
+                .ignoresSafeArea(.all)
+
             
             // Попап
             VStack(spacing: 30) {
@@ -270,6 +277,20 @@ struct GameView: View {
                 Text(gameManager.winner != nil ? "You won!" : "You lost!")
                     .font(.customLargeTitle)
                     .foregroundColor(.white)
+                
+                // Кількість монет
+                if !gameManager.players.isEmpty, gameManager.players[0].isHuman {
+                    HStack(spacing: 8) {
+                        Image("coin")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 30, height: 30)
+                        
+                        Text("\(gameManager.getPlayerCoins()) coins earned")
+                            .font(.customHeadline)
+                            .foregroundColor(.white)
+                    }
+                }
                 
                 // Кнопка "Back to Menu"
                 Button(action: {
@@ -314,7 +335,7 @@ struct GameView: View {
             )
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .edgesIgnoringSafeArea(.all)
+        .ignoresSafeArea(.all)
     }
     
     // MARK: - Game Logic

@@ -28,7 +28,7 @@ class ShopManager: ObservableObject {
     init() {
         // Завантажуємо гроші (використовуємо _coins для прямого доступу під час ініціалізації)
         let loadedCoins = UserDefaults.standard.integer(forKey: "userCoins")
-        let initialCoins = loadedCoins == 0 ? 100 : loadedCoins
+        let initialCoins = loadedCoins == 0 ? 0 : loadedCoins
         _coins = Published(initialValue: initialCoins)
         
         // Завантажуємо відкриті скіни (використовуємо _unlockedSkins для прямого доступу)
