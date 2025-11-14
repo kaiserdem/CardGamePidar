@@ -183,12 +183,18 @@ struct GameView: View {
                 Button(action: {
                     takeCardFromRandomOpponent()
                 }) {
-                    Text("Take Card")
-                        .font(.customTitle2)
-                        .foregroundColor(.white)
-                        .padding()
-                        .background(Color.blue)
-                        .cornerRadius(10)
+                    ZStack {
+                        Image("button")
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: UIScreen.main.bounds.width / 1.9, height: 50)
+                            .ignoresSafeArea()
+
+                        Text("Take Card")
+                            .font(.customHeadline)
+                            .foregroundColor(.white)
+                    }
+                    .padding()
                 }
             }
         }
