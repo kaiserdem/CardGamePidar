@@ -67,7 +67,7 @@ struct GameView: View {
                     //.padding(.top, 150)
                 }
                 
-                Spacer()
+               
                 
                 // Контент гри (карти суперника в центрі, без аватара)
                 gameContent

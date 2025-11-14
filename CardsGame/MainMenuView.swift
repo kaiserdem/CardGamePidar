@@ -3,6 +3,7 @@ import SwiftUI
 
 struct MainMenuView: View {
     @State private var showGameView = false
+    @State private var showTutorialView = false
     @State private var numberOfPlayers = 2
     
     var body: some View {
@@ -29,8 +30,7 @@ struct MainMenuView: View {
                 .padding(.bottom, 20)
                 
                 MenuButton(title: "Tutorial") {
-                    // TODO: Показати туторіал
-                    print("Tutorial")
+                    showTutorialView = true
                 }
                 .padding(.bottom, 20)
                 
@@ -45,6 +45,9 @@ struct MainMenuView: View {
         }
         .fullScreenCover(isPresented: $showGameView) {
             GameView(numberOfPlayers: numberOfPlayers)
+        }
+        .fullScreenCover(isPresented: $showTutorialView) {
+            TutorialView()
         }
     }
 }
