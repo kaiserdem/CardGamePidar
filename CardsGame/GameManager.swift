@@ -4,7 +4,7 @@ import Combine
 class GameManager: ObservableObject {
     @Published var players: [Player] = []
     @Published var currentPlayerIndex: Int = 0
-    @Published var gameState: GameState = .notStarted
+    @Published var gameState: GameState = .finished
     @Published var winner: Player?
     
     let numberOfPlayers: Int
@@ -166,13 +166,41 @@ class GameManager: ObservableObject {
         return card
     }
     
+    // Взяти карту у суперника без додавання до руки (для показу на столі)
+    func takeCardFromOpponentWithoutAdding(opponentIndex: Int) -> PlayingCard? {
+        guard opponentIndex < players.count,
+              opponentIndex != currentPlayerIndex,
+              !players[opponentIndex].hand.isEmpty else {
+            return nil
+        }
+        
+        // Випадкова карта з руки суперника
+        let randomIndex = Int.random(in: 0..<players[opponentIndex].hand.count)
+        let card = players[opponentIndex].hand.remove(at: randomIndex)
+        
+        return card
+    }
+    
+    // Додати карту до руки поточного гравця
+    func addCardToCurrentPlayer(card: PlayingCard) {
+        players[currentPlayerIndex].hand.append(card)
+    }
+    
+    // Перевірити та видалити пари для поточного гравця
+    func checkAndRemovePairsForCurrentPlayer() {
+        // Спочатку знаходимо пари
+        foundPairs[currentPlayerIndex] = findPairs(for: currentPlayerIndex)
+        // Потім видаляємо їх
+        checkAndRemovePairs(for: currentPlayerIndex)
+    }
+    
     // Перевірка та видалення пар у гравця
     private func checkAndRemovePairs(for playerIndex: Int) {
         removePairs(for: playerIndex)
     }
     
     // Перевірка чи є переможець
-    private func checkForWinner() {
+    func checkForWinner() {
         let playersWithCards = players.filter { $0.hasCards }
         
         if playersWithCards.count == 1 {

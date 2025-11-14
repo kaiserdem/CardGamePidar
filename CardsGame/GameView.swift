@@ -5,6 +5,8 @@ struct GameView: View {
     @StateObject private var gameManager: GameManager
     @State private var dealtCards: [Int: [Bool]] = [:] // Трекінг розданих карт для анімації
     @State private var removingPairsDelay: Double = 0
+    @State private var cardOnTable: PlayingCard? // Карта на столі
+    @State private var cardOnTableOwner: Int? // Чия карта (0 - гравець, 1 - бот)
     
     let numberOfPlayers: Int
     
@@ -23,10 +25,10 @@ struct GameView: View {
             VStack(spacing: 0) {
                 // Відступ зверху
                 Color.black
-                    .frame(height: 120)
+                    .frame(height: 150)
                 
                 // Основний фон
-                Image("bg1")
+                Image("bg3")
                     .resizable()
                     .scaledToFill()
             }
@@ -72,6 +74,8 @@ struct GameView: View {
                 // Карти бота (показуємо тільки під час гри)
                 if gameManager.gameState == .inProgress, numberOfPlayers == 2, gameManager.players.count > 1 {
                     VStack(spacing: 8) {
+                        // Карта на столі над картами бота (фіксована висота, щоб не пригав UI)
+                        
                         // Карти бота (закриті) у сітці
                         CardsGridView(
                             cards: gameManager.players[1].hand,
@@ -80,12 +84,29 @@ struct GameView: View {
                             playerIndex: 1,
                             cardBack: .default
                         )
+                        
+                        ZStack {
+                            // Невидимий placeholder для фіксації розміру
+                            Color.clear
+                                .frame(height: 0)
+                            
+                            if let card = cardOnTable, cardOnTableOwner == 1 {
+                                CardView(
+                                    card: card,
+                                    isFaceUp: true,
+                                    cardBack: .default
+                                )
+                                .frame(width: 80, height: 112)
+                                .transition(.opacity.combined(with: .scale(scale: 0.8)))
+                            }
+                        }
+                        .frame(height: 112) // Фіксована висота
                     }
                     .padding(.top, 20)
                 }
                 
                 Spacer()
-                
+                                
                 // Контент гри (текст стану по центру)
                 gameContent
                 
@@ -96,6 +117,24 @@ struct GameView: View {
                 // Нижня частина: карти користувача
                 if !gameManager.players.isEmpty, gameManager.players[0].isHuman {
                     VStack(spacing: 8) {
+                        // Карта на столі над картами гравця (фіксована висота, щоб не пригав UI)
+                        ZStack {
+                            // Невидимий placeholder для фіксації розміру
+                            Color.clear
+                                .frame(height: 0)
+                            
+                            if let card = cardOnTable, cardOnTableOwner == 0 {
+                                CardView(
+                                    card: card,
+                                    isFaceUp: true,
+                                    cardBack: .default
+                                )
+                                .frame(width: 80, height: 112)
+                                .transition(.opacity.combined(with: .scale(scale: 0.8)))
+                            }
+                        }
+                        .frame(height: 112) // Фіксована висота
+                        
                         // Карти користувача у сітці
                         CardsGridView(
                             cards: gameManager.players[0].hand,
@@ -105,7 +144,7 @@ struct GameView: View {
                             cardBack: .default
                         )
                     }
-                    .padding(.bottom, 150)
+                    .padding(.bottom, 100)
                 }
             }
         }
@@ -172,7 +211,7 @@ struct GameView: View {
     
     // MARK: - In Progress View
     private var inProgressView: some View {
-        VStack(spacing: 20) {
+        VStack(spacing: 5) {
             // Індикатор стану по центру
             Text(gameManager.currentPlayer?.isHuman == true ? "Your turn" : "Bot's turn")
                 .font(.customTitle2)
@@ -202,28 +241,57 @@ struct GameView: View {
     
     // MARK: - Finished View
     private var finishedView: some View {
-        VStack(spacing: 20) {
-            if gameManager.winner != nil {
-                Text("You won!")
-                    .font(.customLargeTitle)
-                    .foregroundColor(.green)
-            } else {
-                Text("You lost!")
-                    .font(.customLargeTitle)
-                    .foregroundColor(.red)
-            }
+        ZStack {
+            // Напівпрозорий фон на весь екран
+            Color.black.opacity(0.5)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .edgesIgnoringSafeArea(.all)
             
-            Button(action: {
-                dismiss()
-            }) {
-                Text("Back to Menu")
-                    .font(.customTitle2)
+            // Попап
+            VStack(spacing: 30) {
+                // Текст результату
+                Text(gameManager.winner != nil ? "You won!" : "You lost!")
+                    .font(.customLargeTitle)
                     .foregroundColor(.white)
+                
+                // Кнопка "Back to Menu"
+                Button(action: {
+                    dismiss()
+                }) {
+                    ZStack {
+                        Image("button")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: UIScreen.main.bounds.width / 1.9, height: 50)
+                        
+                        Text("Back to Menu")
+                            .font(.customHeadline)
+                            .foregroundColor(.white)
+                    }
                     .padding()
-                    .background(Color.blue)
-                    .cornerRadius(10)
+                }
             }
+            .padding(50)
+            .frame(maxWidth: UIScreen.main.bounds.width * 0.8)
+            .background(
+                LinearGradient(
+                    gradient: Gradient(colors: [
+                        Color(hex: "1C1C2C"),
+                        Color(hex: "212135"),
+                        Color(hex: "171726")
+                    ]),
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            )
+            .cornerRadius(30)
+            .overlay(
+                RoundedRectangle(cornerRadius: 30)
+                    .stroke(Color(hex: "A3702C"), lineWidth: 2)
+            )
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .edgesIgnoringSafeArea(.all)
     }
     
     // MARK: - Game Logic
@@ -282,15 +350,112 @@ struct GameView: View {
         
         guard let randomOpponent = opponents.randomElement() else { return }
         
-        _ = gameManager.takeCardFromOpponent(opponentIndex: randomOpponent)
+        // Беремо карту (але не додаємо до руки одразу)
+        let takenCard = gameManager.takeCardFromOpponentWithoutAdding(opponentIndex: randomOpponent)
         
-        // Перехід до наступного гравця
-        gameManager.nextTurn()
+        guard let card = takenCard else { return }
         
-        // Якщо наступний гравець - бот, він робить хід
-        if gameManager.currentPlayer?.isHuman == false {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                gameManager.botTurn()
+        // Показуємо карту на столі над картами гравця
+        withAnimation(.easeInOut(duration: 0.3)) {
+            cardOnTable = card
+            cardOnTableOwner = 0 // Карта гравця
+        }
+        
+        // Після затримки додаємо карту до руки та перевіряємо пари
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+            // Додаємо карту до руки
+            gameManager.addCardToCurrentPlayer(card: card)
+            
+            // Перевіряємо пари
+            gameManager.checkAndRemovePairsForCurrentPlayer()
+            
+            // Перевіряємо переможця
+            gameManager.checkForWinner()
+            
+            // Прибираємо карту зі столу
+            withAnimation(.easeOut(duration: 0.3)) {
+                cardOnTable = nil
+                cardOnTableOwner = nil
+            }
+            
+            // Перехід до наступного гравця
+            gameManager.nextTurn()
+            
+            // Якщо наступний гравець - бот, він робить хід
+            if gameManager.currentPlayer?.isHuman == false {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    botTakeCardFromPlayer()
+                }
+            }
+        }
+    }
+    
+    private func botTakeCardFromPlayer() {
+        // Перевіряємо чи гра не закінчилась
+        guard gameManager.gameState != .finished else { return }
+        
+        // Знаходимо суперників
+        let opponents = gameManager.players.enumerated()
+            .filter { $0.offset != gameManager.currentPlayerIndex && $0.element.hasCards }
+            .map { $0.offset }
+        
+        guard let randomOpponent = opponents.randomElement() else {
+            gameManager.checkForWinner()
+            return
+        }
+        
+        // Беремо карту (але не додаємо до руки одразу)
+        let takenCard = gameManager.takeCardFromOpponentWithoutAdding(opponentIndex: randomOpponent)
+        
+        guard let card = takenCard else {
+            gameManager.checkForWinner()
+            return
+        }
+        
+        // Показуємо карту на столі над картами бота
+        withAnimation(.easeInOut(duration: 0.3)) {
+            cardOnTable = card
+            cardOnTableOwner = 1 // Карта бота
+        }
+        
+        // Після затримки додаємо карту до руки та перевіряємо пари
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+            // Перевіряємо чи гра не закінчилась
+            guard self.gameManager.gameState != .finished else { return }
+            
+            // Додаємо карту до руки
+            self.gameManager.addCardToCurrentPlayer(card: card)
+            
+            // Перевіряємо пари
+            self.gameManager.checkAndRemovePairsForCurrentPlayer()
+            
+            // Перевіряємо переможця
+            self.gameManager.checkForWinner()
+            
+            // Якщо гра закінчилась, не продовжуємо
+            guard self.gameManager.gameState != .finished else {
+                // Прибираємо карту зі столу
+                withAnimation(.easeOut(duration: 0.3)) {
+                    self.cardOnTable = nil
+                    self.cardOnTableOwner = nil
+                }
+                return
+            }
+            
+            // Прибираємо карту зі столу
+            withAnimation(.easeOut(duration: 0.3)) {
+                self.cardOnTable = nil
+                self.cardOnTableOwner = nil
+            }
+            
+            // Перехід до наступного гравця
+            self.gameManager.nextTurn()
+            
+            // Якщо наступний гравець знову бот, він робить хід
+            if self.gameManager.currentPlayer?.isHuman == false {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    self.botTakeCardFromPlayer()
+                }
             }
         }
     }
