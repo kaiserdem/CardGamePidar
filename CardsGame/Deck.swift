@@ -13,25 +13,25 @@ struct Deck {
         cards.shuffle()
     }
     
-    // Роздача карт гравцям
+    // Роздача карт гравцям (збалансована роздача по черзі)
     mutating func dealCards(numberOfPlayers: Int) -> [[PlayingCard]] {
-        let cardsPerPlayer: Int
-        switch numberOfPlayers {
-        case 2:
-            cardsPerPlayer = 26
-        case 4:
-            cardsPerPlayer = 13
-        default:
-            cardsPerPlayer = 52 / numberOfPlayers
+        var hands = Array(repeating: [PlayingCard](), count: numberOfPlayers)
+        
+        // Перемішуємо всю колоду (випадковий порядок карт)
+        cards.shuffle()
+        
+        // Роздаємо по черзі кожну карту
+        var currentPlayer = 0
+        for card in cards {
+            hands[currentPlayer].append(card)
+            currentPlayer = (currentPlayer + 1) % numberOfPlayers
         }
         
-        var hands: [[PlayingCard]] = []
-        
-        for i in 0..<numberOfPlayers {
-            let startIndex = i * cardsPerPlayer
-            let endIndex = startIndex + cardsPerPlayer
-            let playerHand = Array(cards[startIndex..<endIndex])
-            hands.append(playerHand)
+        // Діагностика: скільки карт отримав кожен гравець
+        print("\n=== ПІДСУМОК РОЗДАЧІ ===")
+        for (index, hand) in hands.enumerated() {
+            print("Гравець \(index + 1): \(hand.count) карт")
+            print("  Всі карти: \(hand.map { $0.rawValue })")
         }
         
         return hands

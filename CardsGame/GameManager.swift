@@ -9,6 +9,14 @@ class GameManager: ObservableObject {
     
     let numberOfPlayers: Int
     
+    // Статистика для діагностики
+    private static var gameCount = 0
+    private static var cardsAfterRemovalHistory: [[Int]] = []
+    
+    // Відстеження deadlock (зациклення)
+    private var previousCardCounts: [Int] = []
+    private var noChangeTurns: Int = 0
+    
     enum GameState {
         case notStarted
         case dealing          // Роздача карт
@@ -25,11 +33,17 @@ class GameManager: ObservableObject {
         self.numberOfPlayers = numberOfPlayers
     }
     
-    // Початок гри - тільки роздача
+    // Початок гри - роздача та одразу видалення пар
     func startGame() {
-        var deck = Deck()
-        deck.shuffle()
+        GameManager.gameCount += 1
+        print("=== ГРА #\(GameManager.gameCount) ===")
         
+        // Скидаємо відстеження deadlock
+        previousCardCounts = []
+        noChangeTurns = 0
+        
+        var deck = Deck()
+        // shuffle() викликається всередині dealCards()
         let hands = deck.dealCards(numberOfPlayers: numberOfPlayers)
         
         // Створюємо гравців
@@ -40,21 +54,71 @@ class GameManager: ObservableObject {
             players.append(player)
         }
         
-        // Починаємо з роздачі
-        gameState = .dealing
+        print("=== ПЕРЕД ВИДАЛЕННЯМ ПАР ===")
+        for i in 0..<players.count {
+            print("Гравець \(i + 1): \(players[i].hand.count) карт")
+        }
+        
+        // Одразу видаляємо пари (без показу всіх карт)
+        removePairsFromAllPlayers()
+        
+        print("=== ПІСЛЯ ВИДАЛЕННЯ ПАР ===")
+        for i in 0..<players.count {
+            let remaining = players[i].hand.count
+            print("Гравець \(i + 1): \(remaining) карт залишилось")
+        }
+        
+        // Очищаємо знайдені пари
         foundPairs = [:]
+        
+        // Зберігаємо початкову кількість карт для відстеження deadlock
+        previousCardCounts = players.map { $0.hand.count }
+        
+        // Перевіряємо чи хтось не виграв одразу
+        checkForWinner()
+        
+        // Починаємо з роздачі (для анімації)
+        gameState = .dealing
     }
     
     // Знайти всі пари у всіх гравців (без видалення)
     func findPairsInAllPlayers() {
         foundPairs = [:]
+        print("=== ЗНАЙДЕНІ ПАРИ ===")
         for i in 0..<players.count {
-            foundPairs[i] = findPairs(for: i)
+            let pairs = findPairs(for: i)
+            foundPairs[i] = pairs
+            print("Гравець \(i + 1): знайдено \(pairs.count) пар")
         }
         gameState = .showingPairs
     }
     
-    // Знайти пари у конкретного гравця (повертає масив пар)
+    // Видалити пари з руки (логіка гри "Підара")
+    private func removePairs(from hand: [PlayingCard]) -> [PlayingCard] {
+        var groups = Dictionary(grouping: hand, by: { $0.rank })
+        var result: [PlayingCard] = []
+        
+        for (_, cards) in groups {
+            switch cards.count {
+            case 1:
+                result.append(cards[0])          // одна карта → залишається
+            case 2:
+                break                            // пара → видаляємо
+            case 3, 4:
+                result.append(cards[0])          // трійка/квартет → залишаємо одну карту
+            default:
+                let remainder = cards.count % 2
+                if remainder == 1 {
+                    result.append(cards[0])
+                }
+                // Якщо парна кількість (6, 8...) → видаляємо всі
+            }
+        }
+        
+        return result
+    }
+    
+    // Знайти пари у конкретного гравця (повертає масив пар для відображення)
     func findPairs(for playerIndex: Int) -> [[PlayingCard]] {
         guard playerIndex < players.count else { return [] }
         
@@ -64,15 +128,13 @@ class GameManager: ObservableObject {
         // Групуємо карти за рангом
         for card in hand {
             let rank = card.rank
-            if ranks[rank] == nil {
-                ranks[rank] = []
-            }
-            ranks[rank]?.append(card)
+            ranks[rank, default: []].append(card)
         }
         
-        // Знаходимо пари (2, 4, 6... карт одного рангу)
+        // Знаходимо пари для відображення (2, 4, 6... карт одного рангу)
         var pairs: [[PlayingCard]] = []
-        for (_, cards) in ranks {
+        
+        for (rank, cards) in ranks {
             let count = cards.count
             if count >= 2 {
                 // Якщо парна кількість - всі утворюють пари
@@ -100,7 +162,45 @@ class GameManager: ObservableObject {
     
     // Видалити пари після анімації
     func removePairsAfterAnimation() {
+        print("=== ПЕРЕД ВИДАЛЕННЯМ ПАР ===")
+        for i in 0..<players.count {
+            print("Гравець \(i + 1): \(players[i].hand.count) карт")
+        }
+        
         removePairsFromAllPlayers()
+        
+        print("=== ПІСЛЯ ВИДАЛЕННЯ ПАР ===")
+        var cardsAfterRemoval: [Int] = []
+        for i in 0..<players.count {
+            let remaining = players[i].hand.count
+            cardsAfterRemoval.append(remaining)
+            print("Гравець \(i + 1): \(remaining) карт залишилось")
+            print("  Залишились карти: \(players[i].hand.map { $0.rawValue })")
+        }
+        
+        // Зберігаємо статистику
+        GameManager.cardsAfterRemovalHistory.append(cardsAfterRemoval)
+        if GameManager.cardsAfterRemovalHistory.count >= 5 {
+            print("\n=== СТАТИСТИКА ЗА ОСТАННІ \(GameManager.cardsAfterRemovalHistory.count) ІГОР ===")
+            for (gameIndex, cards) in GameManager.cardsAfterRemovalHistory.enumerated() {
+                print("Гра #\(gameIndex + 1): \(cards.map { "\($0)" }.joined(separator: ", ")) карт")
+            }
+            
+            // Перевіряємо чи завжди однакова кількість
+            let allSame = GameManager.cardsAfterRemovalHistory.allSatisfy { cards in
+                cards.allSatisfy { $0 == cards.first }
+            }
+            if allSame {
+                print("⚠️ УВАГА: Завжди однакова кількість карт після видалення пар!")
+            } else {
+                // Знаходимо унікальні комбінації
+                let unique = Set(GameManager.cardsAfterRemovalHistory.map { $0 })
+                print("Унікальні комбінації: \(unique.count)")
+            }
+        }
+        
+        // Очищаємо знайдені пари (щоб жовтий бордер зник)
+        foundPairs = [:]
         
         // Перевіряємо чи хтось не виграв одразу
         checkForWinner()
@@ -114,26 +214,20 @@ class GameManager: ObservableObject {
     // Автоматичне скидання пар у всіх гравців
     private func removePairsFromAllPlayers() {
         for i in 0..<players.count {
-            removePairs(for: i)
+            let initialCount = players[i].hand.count
+            players[i].hand = removePairs(from: players[i].hand)
+            let remaining = players[i].hand.count
+            print("Гравець \(i + 1): було \(initialCount) карт, залишилось \(remaining) карт")
         }
     }
     
-    // Скидання пар у конкретного гравця (використовує знайдені пари)
+    // Скидання пар у конкретного гравця
     private func removePairs(for playerIndex: Int) {
         guard playerIndex < players.count else { return }
-        
-        // Отримуємо всі карти з пар (використовуємо rawValue для порівняння)
-        var cardsToRemove: [String] = []
-        if let pairs = foundPairs[playerIndex] {
-            for pair in pairs {
-                for card in pair {
-                    cardsToRemove.append(card.rawValue)
-                }
-            }
-        }
-        
-        // Видаляємо карти з руки
-        players[playerIndex].hand = players[playerIndex].hand.filter { !cardsToRemove.contains($0.rawValue) }
+        let initialCount = players[playerIndex].hand.count
+        players[playerIndex].hand = removePairs(from: players[playerIndex].hand)
+        let remaining = players[playerIndex].hand.count
+        print("Гравець \(playerIndex + 1): було \(initialCount) карт, залишилось \(remaining) карт")
     }
     
     // Поточний гравець
@@ -188,37 +282,68 @@ class GameManager: ObservableObject {
     
     // Перевірити та видалити пари для поточного гравця
     func checkAndRemovePairsForCurrentPlayer() {
-        // Спочатку знаходимо пари
-        foundPairs[currentPlayerIndex] = findPairs(for: currentPlayerIndex)
-        // Потім видаляємо їх
-        checkAndRemovePairs(for: currentPlayerIndex)
+        // Видаляємо пари використовуючи нову логіку
+        removePairs(for: currentPlayerIndex)
+        // Очищаємо знайдені пари для цього гравця
+        foundPairs[currentPlayerIndex] = []
+        
+        // Перевіряємо на deadlock
+        checkForDeadlock()
     }
     
     // Перевірка та видалення пар у гравця
     private func checkAndRemovePairs(for playerIndex: Int) {
         removePairs(for: playerIndex)
+        // Перевіряємо на deadlock після видалення пар
+        checkForDeadlock()
+    }
+    
+    // Перевірка на deadlock (зациклення)
+    private func checkForDeadlock() {
+        let currentCardCounts = players.map { $0.hand.count }
+        
+        // Якщо кількість карт не змінилась
+        if currentCardCounts == previousCardCounts {
+            noChangeTurns += 1
+        } else {
+            noChangeTurns = 0
+            previousCardCounts = currentCardCounts
+        }
+        
+        // Якщо протягом 5 ходів кількість карт не змінилась - deadlock
+        if noChangeTurns >= 5 {
+            print("⚠️ DEADLOCK виявлено! Кількість карт не змінюється протягом \(noChangeTurns) ходів")
+            print("  Поточний стан: \(currentCardCounts)")
+            
+            // Завершуємо гру - виграє той, у кого більше карт
+            let playersWithCards = players.filter { $0.hasCards }
+            if let winner = playersWithCards.max(by: { $0.hand.count < $1.hand.count }) {
+                self.winner = winner
+            } else {
+                // Якщо однакова кількість - нічия
+                self.winner = nil
+            }
+            
+            gameState = .finished
+        }
     }
     
     // Перевірка чи є переможець
     func checkForWinner() {
+        // Гравці, у яких ще є карти
         let playersWithCards = players.filter { $0.hasCards }
         
         if playersWithCards.count == 1 {
-            // Залишився один гравець - він програє
+            // Залишився один гравець → він виграв
+            winner = playersWithCards.first
+            gameState = .finished
+        } else if playersWithCards.isEmpty {
+            // Усі без карт → нічия
             winner = nil
             gameState = .finished
-        } else if playersWithCards.isEmpty || playersWithCards.count == 0 {
-            // Всі без карт - нічия (не повинно статися)
-            gameState = .finished
         } else {
-            // Перевіряємо чи хтось виграв (немає карт)
-            for player in players {
-                if !player.hasCards {
-                    winner = player
-                    gameState = .finished
-                    return
-                }
-            }
+            // Гра ще триває
+            winner = nil
         }
     }
     

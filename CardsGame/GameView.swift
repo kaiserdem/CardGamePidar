@@ -71,8 +71,8 @@ struct GameView: View {
                 
                // Spacer()
                 
-                // Карти бота (показуємо тільки під час гри)
-                if gameManager.gameState == .inProgress, numberOfPlayers == 2, gameManager.players.count > 1 {
+                // Карти бота (показуємо тільки після видалення пар)
+                if (gameManager.gameState == .inProgress || gameManager.gameState == .finished), numberOfPlayers == 2, gameManager.players.count > 1 {
                     VStack(spacing: 8) {
                         // Карта на столі над картами бота (фіксована висота, щоб не пригав UI)
                         
@@ -114,8 +114,8 @@ struct GameView: View {
                 
                
                 
-                // Нижня частина: карти користувача
-                if !gameManager.players.isEmpty, gameManager.players[0].isHuman {
+                // Нижня частина: карти користувача (показуємо тільки після видалення пар)
+                if (gameManager.gameState == .inProgress || gameManager.gameState == .finished), !gameManager.players.isEmpty, gameManager.players[0].isHuman {
                     VStack(spacing: 8) {
                         // Карта на столі над картами гравця (фіксована висота, щоб не пригав UI)
                         ZStack {
@@ -144,7 +144,7 @@ struct GameView: View {
                             cardBack: .default
                         )
                     }
-                    .padding(.bottom, 100)
+                    .padding(.bottom, 120)
                 }
             }
         }
@@ -316,9 +316,15 @@ struct GameView: View {
     }
     
     private func animateDealing() {
-        // Проста затримка перед пошуком пар
+        // Проста затримка перед початком гри (пари вже видалені)
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-            gameManager.findPairsInAllPlayers()
+            // Перевіряємо чи хтось не виграв одразу
+            gameManager.checkForWinner()
+            
+            if gameManager.gameState != .finished {
+                gameManager.gameState = .inProgress
+                gameManager.currentPlayerIndex = 0
+            }
         }
     }
     
