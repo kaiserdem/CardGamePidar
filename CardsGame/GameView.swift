@@ -10,11 +10,25 @@ struct GameView: View {
     @State private var cardOnTableOwner: Int? // Чия карта (0 - гравець, 1 - бот)
     @State private var isButtonEnabled: Bool = true // Чи можна натискати кнопку "Take Card"
     
-    let numberOfPlayers: Int
+    let selectedBot: BotProfile?
     
-    init(numberOfPlayers: Int) {
-        self.numberOfPlayers = numberOfPlayers
-        _gameManager = StateObject(wrappedValue: GameManager(numberOfPlayers: numberOfPlayers))
+    init(selectedBot: BotProfile? = nil) {
+        self.selectedBot = selectedBot
+        // Завжди 2 гравці (гравець + бот)
+        _gameManager = StateObject(wrappedValue: GameManager(numberOfPlayers: 2, selectedBot: selectedBot))
+    }
+    
+    private var numberOfPlayers: Int {
+        return 2
+    }
+    
+    // Аватар бота для відображення
+    private var botAvatar: PlayerAvatar {
+        if let bot = selectedBot {
+            return bot.avatar
+        }
+        // За замовчуванням використовуємо player2
+        return .player2
     }
     
     var body: some View {
@@ -73,7 +87,7 @@ struct GameView: View {
                 if numberOfPlayers == 2, gameManager.players.count > 1 {
                     HStack {
                         Spacer()
-                        Image((PlayerAvatar.allCases.first { $0.playerNumber == 2 } ?? .player2).roundedVersion.imageName)
+                        Image(botAvatar.roundedVersion.imageName)
                             .resizable()
                             .scaledToFill()
                             .frame(width: 60, height: 60)
@@ -575,7 +589,8 @@ struct GameView: View {
 }
 
 #Preview {
-    GameView(numberOfPlayers: 2)
+    // Використовуємо першого (безкоштовного) бота для preview
+    GameView(selectedBot: BotProfileManager.allBots.first)
 }
 
 // MARK: - Cards Grid View

@@ -2,11 +2,10 @@
 import SwiftUI
 
 struct MainMenuView: View {
-    @State private var showGameView = false
+    @State private var showPlayerSelection = false
     @State private var showTutorialView = false
     @State private var showShopView = false
     @State private var showSettingsView = false
-    @State private var numberOfPlayers = 2
     
     var body: some View {
         ZStack {
@@ -19,9 +18,8 @@ struct MainMenuView: View {
             VStack(spacing: 30) {
                 Spacer()
                 
-                MenuButton(title: "Play with 2 Players") {
-                    numberOfPlayers = 2
-                    showGameView = true
+                MenuButton(title: "Play") {
+                    showPlayerSelection = true
                 }
                 .padding(.bottom, 20)
                 
@@ -44,8 +42,8 @@ struct MainMenuView: View {
             .padding(.horizontal, 30)
             .padding(.vertical, 60)
         }
-        .fullScreenCover(isPresented: $showGameView) {
-            GameView(numberOfPlayers: numberOfPlayers)
+        .fullScreenCover(isPresented: $showPlayerSelection) {
+            PlayerSelectionView()
         }
         .fullScreenCover(isPresented: $showTutorialView) {
             TutorialView()

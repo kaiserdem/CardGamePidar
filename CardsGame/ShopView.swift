@@ -63,6 +63,10 @@ class ShopManager: ObservableObject {
     func addCoins(_ amount: Int) {
         coins += amount
     }
+    
+    func spendCoins(_ amount: Int) {
+        coins = max(0, coins - amount)
+    }
 }
 
 struct ShopView: View {

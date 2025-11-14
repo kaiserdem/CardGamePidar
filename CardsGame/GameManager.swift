@@ -36,8 +36,11 @@ class GameManager: ObservableObject {
     // Знайдені пари для відображення (playerIndex: [пари карт])
     @Published var foundPairs: [Int: [[PlayingCard]]] = [:]
     
-    init(numberOfPlayers: Int) {
+    let selectedBot: BotProfile?
+    
+    init(numberOfPlayers: Int, selectedBot: BotProfile? = nil) {
         self.numberOfPlayers = numberOfPlayers
+        self.selectedBot = selectedBot
     }
     
     // Початок гри - роздача та одразу видалення пар
@@ -62,7 +65,14 @@ class GameManager: ObservableObject {
         players = []
         for (index, hand) in hands.enumerated() {
             let isHuman = (index == 0) // Перший гравець - людина
-            let player = Player(hand: hand, isHuman: isHuman, playerNumber: index + 1)
+            var playerNumber = index + 1
+            
+            // Якщо це бот і є вибраний бот, використовуємо його номер
+            if !isHuman, let bot = selectedBot {
+                playerNumber = bot.avatar.playerNumber
+            }
+            
+            let player = Player(hand: hand, isHuman: isHuman, playerNumber: playerNumber)
             players.append(player)
         }
         
@@ -339,9 +349,13 @@ class GameManager: ObservableObject {
             coinsEarned += lastMove // бонус за серію
         }
         
+        // Застосовуємо коефіцієнт грошей від вибраного бота
+        let multiplier = selectedBot?.moneyMultiplier ?? 1.0
+        let finalCoinsEarned = Int(Double(coinsEarned) * multiplier)
+        
         // Нарахування
-        players[currentPlayerIndex].coins += coinsEarned
-        print("🎉 Гравець \(currentPlayer.playerNumber) отримав \(coinsEarned) монет, всього: \(players[currentPlayerIndex].coins)")
+        players[currentPlayerIndex].coins += finalCoinsEarned
+        print("🎉 Гравець \(currentPlayer.playerNumber) отримав \(finalCoinsEarned) монет (базово \(coinsEarned) × \(multiplier)x), всього: \(players[currentPlayerIndex].coins)")
         
         // Звук додавання монет
         SoundManager.shared.playCoinSound()
