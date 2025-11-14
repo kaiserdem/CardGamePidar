@@ -234,32 +234,45 @@ struct GameView: View {
     
     // MARK: - In Progress View
     private var inProgressView: some View {
-        VStack(spacing: 5) {
+        VStack(spacing: 15) {
             // Індикатор стану по центру
             Text(gameManager.currentPlayer?.isHuman == true ? "Your turn" : "Bot's turn")
                 .font(.customTitle2)
                 .foregroundColor(.white)
             
-            // Кнопка взяття карти (тільки для гравця)
+            // Кнопка взяття карти (тільки для гравця) або невидимий placeholder
             if gameManager.currentPlayer?.isHuman == true {
                 Button(action: {
                     takeCardFromRandomOpponent()
                 }) {
-                    ZStack {
-                        Image("button")
-                            .resizable()
-                            .scaledToFill()
-                            .frame(width: UIScreen.main.bounds.width / 1.9, height: 50)
-                            .ignoresSafeArea()
-
-                        Text("Take Card")
-                            .font(.customHeadline)
-                            .foregroundColor(.white)
-                    }
-                    .padding()
+                    Text("Take Card")
+                        .font(.customHeadline)
+                        .foregroundColor(.white)
+                        .frame(width: UIScreen.main.bounds.width / 2.7, height: 50)
+                        .background(
+                            LinearGradient(
+                                gradient: Gradient(colors: [
+                                    Color(hex: "1C1C2C"),
+                                    Color(hex: "212135"),
+                                    Color(hex: "171726")
+                                ]),
+                                startPoint: .top,
+                                endPoint: .bottom
+                            )
+                        )
+                        .cornerRadius(30)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 30)
+                                .stroke(Color(hex: "A3702C"), lineWidth: 2)
+                        )
                 }
+            } else {
+                // Невидимий placeholder для фіксації висоти
+                Color.clear
+                    .frame(height: 50 + 16) // Висота кнопки + padding
             }
         }
+        .frame(height: 100) // Фіксована висота для стабільності
     }
     
     // MARK: - Finished View
