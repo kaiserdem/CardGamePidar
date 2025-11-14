@@ -4,8 +4,8 @@
 <dict>
 	<key>UIAppFonts</key>
 	<array>
-		<string>NotoSerif-ExtraCondensed-BoldItalic.ttf</string>
-		<string>NotoSerif-SemiCondensed-Italic.ttf</string>
+		<string>Exo2-ExtraBold.ttf</string>
+		<string>Exo2-Regular.ttf</string>
 	</array>
 </dict>
 </plist>

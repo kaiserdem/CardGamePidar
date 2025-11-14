@@ -3,12 +3,12 @@ import SwiftUI
 extension Font {
     // Основний шрифт (NotoSerif-SemiCondensed-Italic)
     static func customRegular(size: CGFloat) -> Font {
-        return Font.custom("NotoSerif-SemiCondensed-Italic", size: size)
+        return Font.custom("Exo2-Regular", size: size)
     }
     
     // Жирний шрифт (NotoSerif-ExtraCondensed-BoldItalic)
     static func customBold(size: CGFloat) -> Font {
-        return Font.custom("NotoSerif-ExtraCondensed-BoldItalic", size: size)
+        return Font.custom("Exo2-ExtraBold", size: size)
     }
     
     // Стандартні розміри для зручності

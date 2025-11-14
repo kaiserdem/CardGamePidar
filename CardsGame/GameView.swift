@@ -23,7 +23,7 @@ struct GameView: View {
             VStack(spacing: 0) {
                 // Відступ зверху
                 Color.black
-                    .frame(height: 100)
+                    .frame(height: 80)
                 
                 // Основний фон
                 Image("bg1")
@@ -33,7 +33,7 @@ struct GameView: View {
             .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                // Верхня частина: кнопка назад та аватар користувача
+                // Верхня частина: кнопка назад
                 HStack {
                     Button(action: {
                         dismiss()
@@ -47,21 +47,29 @@ struct GameView: View {
                     .padding(.top, 100)
                     
                     Spacer()
-                    
-                    // Аватар користувача зверху
-                    if !gameManager.players.isEmpty, gameManager.players[0].isHuman {
-                        Image(PlayerAvatar.allCases.first { $0.playerNumber == 1 }?.imageName ?? "Player1")
+                }
+                
+                // Аватар бота зверху посередині (круглий з border)
+                if numberOfPlayers == 2, gameManager.players.count > 1 {
+                    HStack {
+                        Spacer()
+                        Image((PlayerAvatar.allCases.first { $0.playerNumber == 2 } ?? .player2).roundedVersion.imageName)
                             .resizable()
-                            .scaledToFit()
+                            .scaledToFill()
                             .frame(width: 60, height: 60)
-                            .padding(.trailing, 20)
-                            .padding(.top, 100)
+                            .clipShape(Circle())
+                            .overlay(
+                                Circle()
+                                    .stroke(Color(hex: "A3702C"), lineWidth: 3)
+                            )
+                        Spacer()
                     }
+                    //.padding(.top, 150)
                 }
                 
                 Spacer()
                 
-                // Контент гри (карти суперника в центрі)
+                // Контент гри (карти суперника в центрі, без аватара)
                 gameContent
                 
                 Spacer()
@@ -126,15 +134,9 @@ struct GameView: View {
                 .foregroundColor(.white)
             
             if numberOfPlayers == 2 {
-                // Бот зверху (тільки карти, без аватара тут)
+                // Бот зверху (тільки карти, без аватара)
                 if gameManager.players.count > 1 {
                     VStack(spacing: 8) {
-                        // Аватар бота
-                        Image(PlayerAvatar.allCases.first { $0.playerNumber == 2 }?.imageName ?? "Player2")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 50, height: 50)
-                        
                         // Карти бота
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 8) {
@@ -170,15 +172,9 @@ struct GameView: View {
                 .foregroundColor(.white)
             
             if numberOfPlayers == 2 {
-                // Бот зверху (показуємо карти для візуалізації пар)
+                // Бот зверху (показуємо карти для візуалізації пар, без аватара)
                 if gameManager.players.count > 1 {
                     VStack(spacing: 8) {
-                        // Аватар бота
-                        Image(PlayerAvatar.allCases.first { $0.playerNumber == 2 }?.imageName ?? "Player2")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 50, height: 50)
-                        
                         // Карти бота з підсвіткою пар
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 8) {
@@ -217,15 +213,9 @@ struct GameView: View {
                 .foregroundColor(.white)
             
             if numberOfPlayers == 2 {
-                // Бот зверху
+                // Бот зверху (без аватара)
                 if gameManager.players.count > 1 {
                     VStack(spacing: 8) {
-                        // Аватар бота
-                        Image(PlayerAvatar.allCases.first { $0.playerNumber == 2 }?.imageName ?? "Player2")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 50, height: 50)
-                        
                         // Карти бота з підсвіткою пар
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 8) {
@@ -263,15 +253,9 @@ struct GameView: View {
                 .foregroundColor(.white)
             
             if numberOfPlayers == 2 {
-                // Бот зверху (закриті карти)
+                // Бот зверху (закриті карти, без аватара)
                 if gameManager.players.count > 1 {
                     VStack(spacing: 8) {
-                        // Аватар бота
-                        Image(PlayerAvatar.allCases.first { $0.playerNumber == 2 }?.imageName ?? "Player2")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 50, height: 50)
-                        
                         // Карти бота (закриті)
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 8) {
