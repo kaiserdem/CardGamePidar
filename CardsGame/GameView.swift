@@ -46,7 +46,7 @@ struct GameView: View {
                             .frame(width: 40, height: 40)
                     }
                     .padding(.leading, 20)
-                    .padding(.top, 100)
+                    .padding(.top, 120)
                     
                     Spacer()
                 }

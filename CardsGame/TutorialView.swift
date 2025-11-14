@@ -43,7 +43,7 @@ struct TutorialView: View {
                     Spacer()
                 }
                 .padding(.horizontal, 20)
-                .padding(.top, 100)
+                .padding(.top, 85)
                                
                 
                 Spacer()

@@ -120,7 +120,7 @@ struct ShopView: View {
                     }
                 }
                 .padding(.horizontal, 20)
-                .padding(.top, 100)
+                .padding(.top, 120)
                 
                 Spacer()
                 
