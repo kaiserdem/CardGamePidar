@@ -407,6 +407,9 @@ class GameManager: ObservableObject {
                     print("💰 Монети розподілено порівну: \(coinsPerPlayer) монет кожному гравцю")
                 }
                 
+                // Зберігаємо статистику (нічия = програш для гравця)
+                saveGameStatistics(didWin: false)
+                
                 gameState = .finished
                 return
             }
@@ -427,7 +430,7 @@ class GameManager: ObservableObject {
             previousCardCounts = currentCardCounts
         }
         
-        // Якщо протягом 5 ходів кількість карт не змінилась - deadlock
+            // Якщо протягом 5 ходів кількість карт не змінилась - deadlock
         if noChangeTurns >= 5 {
             print("⚠️ DEADLOCK виявлено! Кількість карт не змінюється протягом \(noChangeTurns) ходів")
             print("  Поточний стан: \(currentCardCounts)")
@@ -436,9 +439,13 @@ class GameManager: ObservableObject {
             let playersWithCards = players.filter { $0.hasCards }
             if let winner = playersWithCards.max(by: { $0.hand.count < $1.hand.count }) {
                 self.winner = winner
+                // Зберігаємо статистику
+                saveGameStatistics(didWin: winner.isHuman)
             } else {
                 // Якщо однакова кількість - нічия
                 self.winner = nil
+                // Зберігаємо статистику (нічия = програш для гравця)
+                saveGameStatistics(didWin: false)
             }
             
             gameState = .finished
@@ -469,14 +476,29 @@ class GameManager: ObservableObject {
                 SoundManager.shared.playLoseSound()
             }
             
+            // Зберігаємо статистику
+            saveGameStatistics(didWin: winner?.isHuman ?? false)
+            
             gameState = .finished
         } else if playersWithCards.isEmpty {
             // Усі без карт → нічия
             winner = nil
+            // Зберігаємо статистику (нічия = програш для гравця)
+            saveGameStatistics(didWin: false)
             gameState = .finished
         } else {
             // Гра ще триває
             winner = nil
+        }
+    }
+    
+    // Зберегти статистику гри
+    private func saveGameStatistics(didWin: Bool) {
+        // Знаходимо бота (індекс 1, якщо є selectedBot)
+        if let bot = selectedBot {
+            let playerWon = didWin
+            StatisticsManager.shared.recordGame(botId: bot.id, didWin: playerWon)
+            print("📊 Статистика збережена: \(bot.name) - \(playerWon ? "Перемога" : "Поразка")")
         }
     }
     

@@ -6,6 +6,7 @@ struct MainMenuView: View {
     @State private var showTutorialView = false
     @State private var showShopView = false
     @State private var showSettingsView = false
+    @State private var showStatisticsView = false
     
     var body: some View {
         ZStack {
@@ -36,6 +37,11 @@ struct MainMenuView: View {
                 MenuButton(title: "Settings") {
                     showSettingsView = true
                 }
+                .padding(.bottom, 20)
+                
+                MenuButton(title: "Statistics") {
+                    showStatisticsView = true
+                }
                 .padding(.bottom, 50)
                 
             }
@@ -53,6 +59,9 @@ struct MainMenuView: View {
         }
         .fullScreenCover(isPresented: $showSettingsView) {
             SettingsView()
+        }
+        .fullScreenCover(isPresented: $showStatisticsView) {
+            StatisticsView()
         }
     }
 }

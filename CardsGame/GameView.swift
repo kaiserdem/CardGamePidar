@@ -31,6 +31,11 @@ struct GameView: View {
         return .player2
     }
     
+    // Ім'я бота для відображення
+    private var botName: String {
+        return selectedBot?.name ?? "Bot"
+    }
+    
     var body: some View {
         ZStack {
             // Чорний фон для верхньої частини
@@ -251,7 +256,7 @@ struct GameView: View {
     private var inProgressView: some View {
         VStack(spacing: 15) {
             // Індикатор стану по центру
-            Text(gameManager.currentPlayer?.isHuman == true ? "Your turn" : "Bot's turn")
+            Text(gameManager.currentPlayer?.isHuman == true ? "Your turn" : "\(botName)'s turn")
                 .font(.customTitle2)
                 .foregroundColor(.white)
             

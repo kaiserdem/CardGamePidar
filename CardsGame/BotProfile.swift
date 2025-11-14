@@ -45,18 +45,18 @@ class BotProfileManager: ObservableObject {
             BotProfile(
                 id: UUID(uuidString: "00000000-0000-0000-0000-000000000001")!,
                 avatar: .player2,
-                name: "Alex",
+                name: "Maria",
                 rating: 1000,
                 moneyMultiplier: 1.0,
-                country: "Ukraine",
-                city: "Kyiv",
+                country: "Italy",
+                city: "Rome",
                 description: "Beginner player, friendly and calm. Perfect for learning the game.",
                 price: 0
             ),
             BotProfile(
                 id: UUID(uuidString: "00000000-0000-0000-0000-000000000002")!,
                 avatar: .player3,
-                name: "Maria",
+                name: "Alex",
                 rating: 1200,
                 moneyMultiplier: 1.2,
                 country: "Poland",
@@ -67,7 +67,7 @@ class BotProfileManager: ObservableObject {
             BotProfile(
                 id: UUID(uuidString: "00000000-0000-0000-0000-000000000003")!,
                 avatar: .player4,
-                name: "James",
+                name: "Sophie",
                 rating: 1400,
                 moneyMultiplier: 1.5,
                 country: "USA",
@@ -78,7 +78,7 @@ class BotProfileManager: ObservableObject {
             BotProfile(
                 id: UUID(uuidString: "00000000-0000-0000-0000-000000000004")!,
                 avatar: .player5,
-                name: "Sophie",
+                name: "SophieJames",
                 rating: 1600,
                 moneyMultiplier: 1.8,
                 country: "France",
@@ -100,7 +100,7 @@ class BotProfileManager: ObservableObject {
             BotProfile(
                 id: UUID(uuidString: "00000000-0000-0000-0000-000000000006")!,
                 avatar: .player7,
-                name: "Emma",
+                name: "Carlos",
                 rating: 1500,
                 moneyMultiplier: 1.6,
                 country: "Germany",
@@ -111,7 +111,7 @@ class BotProfileManager: ObservableObject {
             BotProfile(
                 id: UUID(uuidString: "00000000-0000-0000-0000-000000000007")!,
                 avatar: .player8,
-                name: "Carlos",
+                name: "CarlosEmma",
                 rating: 1700,
                 moneyMultiplier: 1.9,
                 country: "Spain",
@@ -122,7 +122,7 @@ class BotProfileManager: ObservableObject {
             BotProfile(
                 id: UUID(uuidString: "00000000-0000-0000-0000-000000000008")!,
                 avatar: .player1,
-                name: "Luna",
+                name: "Lunior",
                 rating: 2000,
                 moneyMultiplier: 2.5,
                 country: "Canada",
