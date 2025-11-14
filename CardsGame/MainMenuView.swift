@@ -4,6 +4,7 @@ import SwiftUI
 struct MainMenuView: View {
     @State private var showGameView = false
     @State private var showTutorialView = false
+    @State private var showShopView = false
     @State private var numberOfPlayers = 2
     
     var body: some View {
@@ -35,7 +36,7 @@ struct MainMenuView: View {
                 .padding(.bottom, 20)
                 
                 MenuButton(title: "Shop") {
-                    print("Shop")
+                    showShopView = true
                 }
                 .padding(.bottom, 50)
                 
@@ -48,6 +49,9 @@ struct MainMenuView: View {
         }
         .fullScreenCover(isPresented: $showTutorialView) {
             TutorialView()
+        }
+        .fullScreenCover(isPresented: $showShopView) {
+            ShopView()
         }
     }
 }

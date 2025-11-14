@@ -155,6 +155,33 @@ struct TutorialView: View {
                     .font(.customRegular(size: 19))
                     .foregroundColor(.white)
             }
+            
+            // Магазин
+            VStack(alignment: .leading, spacing: 10) {
+                Text("Shop")
+                    .font(.customBold(size: 22))
+                    .foregroundColor(.white)
+                
+                Text("• Win games to earn coins!")
+                    .font(.customRegular(size: 19))
+                    .foregroundColor(.white)
+                
+                Text("• Use your coins to buy card back skins in the Shop")
+                    .font(.customRegular(size: 19))
+                    .foregroundColor(.white)
+                
+                Text("• Each skin has a different price - save up to unlock them all!")
+                    .font(.customRegular(size: 19))
+                    .foregroundColor(.white)
+                
+                Text("• The first skin (Vector-0) is unlocked by default")
+                    .font(.customRegular(size: 19))
+                    .foregroundColor(.white)
+                
+                Text("• Unlocked skins can be used as card backs during the game")
+                    .font(.customRegular(size: 19))
+                    .foregroundColor(.white)
+            }
         }
     }
 }

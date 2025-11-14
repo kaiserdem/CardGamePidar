@@ -110,22 +110,21 @@ enum PlayingCard: String, CaseIterable {
     
     var fullName: String {
         let rankName: String
-        switch self.rawValue.prefix { $0.isLetter == false } {
-        case "2": rankName = "2"
-        case "3": rankName = "3"
-        case "4": rankName = "4"
-        case "5": rankName = "5"
-        case "6": rankName = "6"
-        case "7": rankName = "7"
-        case "8": rankName = "8"
-        case "9": rankName = "9"
-        case "10": rankName = "10"
-        case "Jack": rankName = "Jack"
-        case "Queen": rankName = "Queen"
-        case "King": rankName = "King"
-        case "Ace": rankName = "Ace"
-        default: rankName = ""
-        }
+        let raw = self.rawValue
+        if raw.hasPrefix("2") { rankName = "2" }
+        else if raw.hasPrefix("3") { rankName = "3" }
+        else if raw.hasPrefix("4") { rankName = "4" }
+        else if raw.hasPrefix("5") { rankName = "5" }
+        else if raw.hasPrefix("6") { rankName = "6" }
+        else if raw.hasPrefix("7") { rankName = "7" }
+        else if raw.hasPrefix("8") { rankName = "8" }
+        else if raw.hasPrefix("9") { rankName = "9" }
+        else if raw.hasPrefix("10") { rankName = "10" }
+        else if raw.hasPrefix("Jack") { rankName = "Jack" }
+        else if raw.hasPrefix("Queen") { rankName = "Queen" }
+        else if raw.hasPrefix("King") { rankName = "King" }
+        else if raw.hasPrefix("Ace") { rankName = "Ace" }
+        else { rankName = "" }
         return "\(rankName) of \(suit)"
     }
 }

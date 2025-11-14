@@ -296,7 +296,7 @@ struct GameView: View {
     // MARK: - Finished View
     private var finishedView: some View {
         VStack(spacing: 20) {
-            if let winner = gameManager.winner {
+            if gameManager.winner != nil {
                 Text("You won!")
                     .font(.customLargeTitle)
                     .foregroundColor(.green)
