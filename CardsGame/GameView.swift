@@ -3,6 +3,7 @@ import SwiftUI
 struct GameView: View {
     @Environment(\.dismiss) var dismiss
     @StateObject private var gameManager: GameManager
+    @StateObject private var shopManager = ShopManager()
     @State private var dealtCards: [Int: [Bool]] = [:] // Трекінг розданих карт для анімації
     @State private var removingPairsDelay: Double = 0
     @State private var cardOnTable: PlayingCard? // Карта на столі
@@ -35,7 +36,7 @@ struct GameView: View {
             .ignoresSafeArea()
             
             VStack(spacing: 0) {
-                // Верхня частина: кнопка назад
+                // Верхня частина: кнопка назад та монети
                 HStack {
                     Button(action: {
                         dismiss()
@@ -49,6 +50,22 @@ struct GameView: View {
                     .padding(.top, 120)
                     
                     Spacer()
+                    
+                    // Відображення монет
+                    if !gameManager.players.isEmpty, gameManager.players[0].isHuman {
+                        HStack(spacing: 8) {
+                            Image("coin")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 30, height: 30)
+                            
+                            Text("\(gameManager.players[0].coins)")
+                                .font(.customHeadline)
+                                .foregroundColor(.white)
+                        }
+                        .padding(.trailing, 20)
+                        .padding(.top, 120)
+                    }
                 }
                 
                 // Аватар бота зверху посередині (круглий з border)
@@ -256,6 +273,12 @@ struct GameView: View {
                 
                 // Кнопка "Back to Menu"
                 Button(action: {
+                    // Зберігаємо монети в ShopManager перед поверненням
+                    let earnedCoins = gameManager.getPlayerCoins()
+                    if earnedCoins > 0 {
+                        shopManager.addCoins(earnedCoins)
+                        print("💰 Збережено \(earnedCoins) монет в ShopManager")
+                    }
                     dismiss()
                 }) {
                     ZStack {
@@ -356,6 +379,9 @@ struct GameView: View {
         
         guard let randomOpponent = opponents.randomElement() else { return }
         
+        // Зберігаємо кількість карт суперника до видалення
+        let opponentCardsCountBefore = gameManager.players[randomOpponent].hand.count
+        
         // Беремо карту (але не додаємо до руки одразу)
         let takenCard = gameManager.takeCardFromOpponentWithoutAdding(opponentIndex: randomOpponent)
         
@@ -371,6 +397,9 @@ struct GameView: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
             // Додаємо карту до руки
             gameManager.addCardToCurrentPlayer(card: card)
+            
+            // Нараховуємо монети за хід (перед видаленням пар, щоб перевірити чи утворилась пара)
+            gameManager.awardCoinsForMove(takenCard: card, from: randomOpponent, opponentCardsCountBefore: opponentCardsCountBefore)
             
             // Перевіряємо пари
             gameManager.checkAndRemovePairsForCurrentPlayer()

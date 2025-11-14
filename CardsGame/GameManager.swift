@@ -17,6 +17,9 @@ class GameManager: ObservableObject {
     private var previousCardCounts: [Int] = []
     private var noChangeTurns: Int = 0
     
+    // Відстеження серій успішних ходів для нарахування монет
+    private var lastMoves: [Int: Int] = [:] // playerIndex: кількість успішних ходів підряд
+    
     enum GameState {
         case notStarted
         case dealing          // Роздача карт
@@ -41,6 +44,9 @@ class GameManager: ObservableObject {
         // Скидаємо відстеження deadlock
         previousCardCounts = []
         noChangeTurns = 0
+        
+        // Скидаємо відстеження серій ходів
+        lastMoves = [:]
         
         var deck = Deck()
         // shuffle() викликається всередині dealCards()
@@ -298,6 +304,40 @@ class GameManager: ObservableObject {
         checkForDeadlock()
     }
     
+    // Перевірка чи утворилась пара після додавання карти
+    func formsPair(card: PlayingCard, playerIndex: Int) -> Bool {
+        guard playerIndex < players.count else { return false }
+        let hand = players[playerIndex].hand
+        let rankCount = hand.filter { $0.rank == card.rank }.count
+        return rankCount == 2 // якщо після додавання карти стало 2 → пара утворилась
+    }
+    
+    // Нарахування монет за хід
+    func awardCoinsForMove(takenCard: PlayingCard, from opponentIndex: Int, opponentCardsCountBefore: Int) {
+        guard let currentPlayer = currentPlayer, currentPlayer.isHuman else { return }
+        guard currentPlayerIndex < players.count, opponentIndex < players.count else { return }
+        
+        // Базова нагорода залежно від карт суперника (до видалення карти)
+        var coinsEarned = max(1, opponentCardsCountBefore) // чим більше карт, тим більше монет
+        
+        // Додатково, якщо утворилась пара після додавання карти
+        if formsPair(card: takenCard, playerIndex: currentPlayerIndex) {
+            coinsEarned += 5
+        }
+        
+        // Серія успішних ходів: перевірка попередніх ходів
+        if let lastMove = lastMoves[currentPlayerIndex], lastMove > 1 {
+            coinsEarned += lastMove // бонус за серію
+        }
+        
+        // Нарахування
+        players[currentPlayerIndex].coins += coinsEarned
+        print("🎉 Гравець \(currentPlayer.playerNumber) отримав \(coinsEarned) монет, всього: \(players[currentPlayerIndex].coins)")
+        
+        // Оновлюємо історію ходів для серій
+        lastMoves[currentPlayerIndex] = formsPair(card: takenCard, playerIndex: currentPlayerIndex) ? (lastMoves[currentPlayerIndex] ?? 0) + 1 : 0
+    }
+    
     // Перевірка на deadlock (зациклення)
     private func checkForDeadlock() {
         let currentCardCounts = players.map { $0.hand.count }
@@ -336,6 +376,17 @@ class GameManager: ObservableObject {
         if playersWithCards.count == 1 {
             // Залишився один гравець → він виграв
             winner = playersWithCards.first
+            
+            // Нараховуємо бонус за виграш (тільки для людини)
+            if let winner = winner, winner.isHuman {
+                // Знаходимо індекс переможця
+                if let winnerIndex = players.firstIndex(where: { $0.id == winner.id }) {
+                    let winBonus = 50
+                    players[winnerIndex].coins += winBonus
+                    print("🏆 Гравець виграв! Бонус: \(winBonus) монет, всього: \(players[winnerIndex].coins)")
+                }
+            }
+            
             gameState = .finished
         } else if playersWithCards.isEmpty {
             // Усі без карт → нічия
@@ -345,6 +396,12 @@ class GameManager: ObservableObject {
             // Гра ще триває
             winner = nil
         }
+    }
+    
+    // Отримати монети гравця (для збереження в ShopManager)
+    func getPlayerCoins() -> Int {
+        guard !players.isEmpty, players[0].isHuman else { return 0 }
+        return players[0].coins
     }
     
     // Перехід до наступного гравця

@@ -19,10 +19,10 @@ class ShopManager: ObservableObject {
     // Ціни скінів
     let skinPrices: [String: Int] = [
         "Vector-0": 0,  // Безкоштовний
-        "Vector-1": 100,
-        "Vector-2": 200,
-        "Vector-3": 300,
-        "Vector-4": 400
+        "Vector-1": 300,
+        "Vector-2": 600,
+        "Vector-3": 1000,
+        "Vector-4": 1500
     ]
     
     init() {
@@ -110,10 +110,12 @@ struct ShopView: View {
                     Spacer()
                     
                     // Гроші
-                    HStack(spacing: 5) {
-                        Image(systemName: "dollarsign.circle.fill")
-                            .foregroundColor(.yellow)
-                            .font(.title2)
+                    HStack(spacing: 8) {
+                        Image("coin")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 30, height: 30)
+                        
                         Text("\(shopManager.coins)")
                             .font(.customBold(size: 20))
                             .foregroundColor(.white)
