@@ -27,9 +27,9 @@ struct CardView: View {
                     .scaledToFit()
             }
         }
-        .frame(width: 60, height: 84)
+        .aspectRatio(60/84, contentMode: .fit) // Зберігаємо пропорції карти
         .overlay(
-            RoundedRectangle(cornerRadius: 8)
+            RoundedRectangle(cornerRadius: 2)
                 .stroke(isHighlighted ? Color.yellow : Color.clear, lineWidth: 3)
         )
         .opacity(isHighlighted ? 0.8 : 1.0)

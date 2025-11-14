@@ -23,7 +23,7 @@ struct GameView: View {
             VStack(spacing: 0) {
                 // Відступ зверху
                 Color.black
-                    .frame(height: 80)
+                    .frame(height: 120)
                 
                 // Основний фон
                 Image("bg1")
@@ -64,41 +64,48 @@ struct GameView: View {
                             )
                         Spacer()
                     }
-                    //.padding(.top, 150)
+                    .padding(.top, -20)
                 }
                 
-               
+               // Spacer()
                 
-                // Контент гри (карти суперника в центрі, без аватара)
+                // Карти бота (показуємо тільки під час гри)
+                if gameManager.gameState == .inProgress, numberOfPlayers == 2, gameManager.players.count > 1 {
+                    VStack(spacing: 8) {
+                        // Карти бота (закриті) у сітці
+                        CardsGridView(
+                            cards: gameManager.players[1].hand,
+                            isFaceUp: false,
+                            foundPairs: gameManager.foundPairs[1] ?? [],
+                            playerIndex: 1,
+                            cardBack: .default
+                        )
+                    }
+                    .padding(.top, 20)
+                }
+                
+                Spacer()
+                
+                // Контент гри (текст стану по центру)
                 gameContent
                 
                 Spacer()
                 
+               
+                
                 // Нижня частина: карти користувача
                 if !gameManager.players.isEmpty, gameManager.players[0].isHuman {
                     VStack(spacing: 8) {
-                        // Карти користувача
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 8) {
-                                ForEach(gameManager.players[0].hand, id: \.rawValue) { card in
-                                    CardView(
-                                        card: card,
-                                        isFaceUp: true,
-                                        isHighlighted: isCardInPair(card, playerIndex: 0),
-                                        cardBack: .default
-                                    )
-                                }
-                            }
-                            .padding(.horizontal, 10)
-                        }
-                        .frame(height: 100)
-                        
-                        // Кількість карт
-                        Text("\(gameManager.players[0].cardCount) cards")
-                            .font(.customCaption)
-                            .foregroundColor(.white)
-                            .padding(.bottom, 20)
+                        // Карти користувача у сітці
+                        CardsGridView(
+                            cards: gameManager.players[0].hand,
+                            isFaceUp: true,
+                            foundPairs: gameManager.foundPairs[0] ?? [],
+                            playerIndex: 0,
+                            cardBack: .default
+                        )
                     }
+                    .padding(.bottom, 150)
                 }
             }
         }
@@ -128,74 +135,19 @@ struct GameView: View {
     
     // MARK: - Dealing View
     private var dealingView: some View {
-        VStack(spacing: 20) {
+        VStack {
             Text("Dealing cards...")
                 .font(.customTitle)
                 .foregroundColor(.white)
-            
-            if numberOfPlayers == 2 {
-                // Бот зверху (тільки карти, без аватара)
-                if gameManager.players.count > 1 {
-                    VStack(spacing: 8) {
-                        // Карти бота
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 8) {
-                                ForEach(gameManager.players[1].hand, id: \.rawValue) { card in
-                                    CardView(
-                                        card: card,
-                                        isFaceUp: false,
-                                        cardBack: .default
-                                    )
-                                }
-                            }
-                            .padding(.horizontal, 10)
-                        }
-                        
-                        Text("\(gameManager.players[1].cardCount) cards")
-                            .font(.customCaption)
-                            .foregroundColor(.white)
-                    }
-                }
-            } else {
-                // Для 4 гравців (пізніше)
-                Text("4 players layout")
-                    .foregroundColor(.white)
-            }
         }
     }
     
     // MARK: - Showing Pairs View
     private var showingPairsView: some View {
-        VStack(spacing: 20) {
+        VStack {
             Text("Found pairs!")
                 .font(.customTitle)
                 .foregroundColor(.white)
-            
-            if numberOfPlayers == 2 {
-                // Бот зверху (показуємо карти для візуалізації пар, без аватара)
-                if gameManager.players.count > 1 {
-                    VStack(spacing: 8) {
-                        // Карти бота з підсвіткою пар
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 8) {
-                                ForEach(gameManager.players[1].hand, id: \.rawValue) { card in
-                                    CardView(
-                                        card: card,
-                                        isFaceUp: true,
-                                        isHighlighted: isCardInPair(card, playerIndex: 1),
-                                        cardBack: .default
-                                    )
-                                }
-                            }
-                            .padding(.horizontal, 10)
-                        }
-                        
-                        Text("\(gameManager.players[1].cardCount) cards")
-                            .font(.customCaption)
-                            .foregroundColor(.white)
-                    }
-                }
-            }
         }
         .onAppear {
             // Автоматично переходимо до скидання через 2 секунди
@@ -207,36 +159,10 @@ struct GameView: View {
     
     // MARK: - Removing Pairs View
     private var removingPairsView: some View {
-        VStack(spacing: 20) {
+        VStack {
             Text("Removing pairs...")
                 .font(.customTitle)
                 .foregroundColor(.white)
-            
-            if numberOfPlayers == 2 {
-                // Бот зверху (без аватара)
-                if gameManager.players.count > 1 {
-                    VStack(spacing: 8) {
-                        // Карти бота з підсвіткою пар
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 8) {
-                                ForEach(gameManager.players[1].hand, id: \.rawValue) { card in
-                                    CardView(
-                                        card: card,
-                                        isFaceUp: true,
-                                        isHighlighted: isCardInPair(card, playerIndex: 1),
-                                        cardBack: .default
-                                    )
-                                }
-                            }
-                            .padding(.horizontal, 10)
-                        }
-                        
-                        Text("\(gameManager.players[1].cardCount) cards")
-                            .font(.customCaption)
-                            .foregroundColor(.white)
-                    }
-                }
-            }
         }
         .onAppear {
             // Анімація скидання пар
@@ -247,47 +173,22 @@ struct GameView: View {
     // MARK: - In Progress View
     private var inProgressView: some View {
         VStack(spacing: 20) {
-            // Індикатор стану
+            // Індикатор стану по центру
             Text(gameManager.currentPlayer?.isHuman == true ? "Your turn" : "Bot's turn")
                 .font(.customTitle2)
                 .foregroundColor(.white)
             
-            if numberOfPlayers == 2 {
-                // Бот зверху (закриті карти, без аватара)
-                if gameManager.players.count > 1 {
-                    VStack(spacing: 8) {
-                        // Карти бота (закриті)
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 8) {
-                                ForEach(gameManager.players[1].hand, id: \.rawValue) { _ in
-                                    CardView(
-                                        card: nil,
-                                        isFaceUp: false,
-                                        cardBack: .default
-                                    )
-                                }
-                            }
-                            .padding(.horizontal, 10)
-                        }
-                        
-                        Text("\(gameManager.players[1].cardCount) cards")
-                            .font(.customCaption)
-                            .foregroundColor(.white)
-                    }
-                }
-                
-                // Кнопка взяття карти
-                if gameManager.currentPlayer?.isHuman == true {
-                    Button(action: {
-                        takeCardFromRandomOpponent()
-                    }) {
-                        Text("Take Card")
-                            .font(.customTitle2)
-                            .foregroundColor(.white)
-                            .padding()
-                            .background(Color.blue)
-                            .cornerRadius(10)
-                    }
+            // Кнопка взяття карти (тільки для гравця)
+            if gameManager.currentPlayer?.isHuman == true {
+                Button(action: {
+                    takeCardFromRandomOpponent()
+                }) {
+                    Text("Take Card")
+                        .font(.customTitle2)
+                        .foregroundColor(.white)
+                        .padding()
+                        .background(Color.blue)
+                        .cornerRadius(10)
                 }
             }
         }
@@ -391,4 +292,62 @@ struct GameView: View {
 
 #Preview {
     GameView(numberOfPlayers: 2)
+}
+
+// MARK: - Cards Grid View
+struct CardsGridView: View {
+    let cards: [PlayingCard]
+    let isFaceUp: Bool
+    let foundPairs: [[PlayingCard]]
+    let playerIndex: Int
+    let cardBack: CardBack
+    
+    private let columns = 7
+    private let spacing: CGFloat = 8
+    private let horizontalPadding: CGFloat = 20
+    
+    private var cardWidth: CGFloat {
+        let screenWidth = UIScreen.main.bounds.width
+        let availableWidth = screenWidth - (horizontalPadding * 2) - (spacing * CGFloat(columns - 1))
+        return availableWidth / CGFloat(columns)
+    }
+    
+    private var cardHeight: CGFloat {
+        return cardWidth * 1.4 // Співвідношення висоти до ширини карти (84/60 ≈ 1.4)
+    }
+    
+    private var gridHeight: CGFloat {
+        let rows = ceil(Double(cards.count) / Double(columns))
+        let totalSpacing = spacing * CGFloat(rows - 1)
+        return (cardHeight * CGFloat(rows)) + totalSpacing
+    }
+    
+    var body: some View {
+        VStack(spacing: 0) {
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: spacing), count: columns), spacing: spacing) {
+                ForEach(cards, id: \.rawValue) { card in
+                    CardView(
+                        card: isFaceUp ? card : nil,
+                        isFaceUp: isFaceUp,
+                        isHighlighted: isCardInPair(card),
+                        cardBack: cardBack
+                    )
+                    .frame(width: cardWidth, height: cardHeight)
+                }
+            }
+            .padding(.horizontal, horizontalPadding)
+        }
+        .frame(height: gridHeight)
+    }
+    
+    private func isCardInPair(_ card: PlayingCard) -> Bool {
+        for pair in foundPairs {
+            for pairCard in pair {
+                if pairCard.rawValue == card.rawValue {
+                    return true
+                }
+            }
+        }
+        return false
+    }
 }
